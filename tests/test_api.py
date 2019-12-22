@@ -12,8 +12,10 @@ from pywarmup.api import TemperatureUnit
 from pywarmup.api import get_access_token
 from pywarmup.error import InvalidToken
 
-from .responses import RESPONSE_GET_TOKEN, RESPONSE_GET_LOCATIONS, \
-    RESPONSE_GET_ROOM_DATA, RESPONSE_SET_TEMPERATURE
+from .responses import RESPONSE_GET_LOCATIONS
+from .responses import RESPONSE_GET_ROOM_DATA
+from .responses import RESPONSE_GET_TOKEN
+from .responses import RESPONSE_SET_TEMPERATURE
 
 
 @pytest.fixture
@@ -41,7 +43,6 @@ def test_get_token_http_error(requests_mock):
 
 @patch("pywarmup.api.requests")
 class TestAPI:
-
     def test_get_locations(self, requests_mock, api_factory):
         api = api_factory
         requests_mock.post.return_value = Mock(
@@ -73,8 +74,10 @@ class TestAPI:
             override_duration=0,
             override_temp=24.0,
             location=Location(
-                id=123, name="Home", temp_unit=TemperatureUnit.CELSIUS,
-                mode=LocationMode.ON
+                id=123,
+                name="Home",
+                temp_unit=TemperatureUnit.CELSIUS,
+                mode=LocationMode.ON,
             ),
         )
 

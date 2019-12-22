@@ -4,6 +4,7 @@ import logging
 from enum import Enum
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import NamedTuple
 
 import requests
@@ -12,8 +13,6 @@ from pywarmup.error import APIError
 from pywarmup.error import InvalidToken
 from pywarmup.error import LocationModeChangeFailure
 from pywarmup.error import TemperatureChangeFailure
-
-from typing import List
 
 TOKEN_URL = "https://api.warmup.com/apps/app/v1"
 URL = "https://apil.warmup.com/graphql"
@@ -92,6 +91,7 @@ def get_access_token(email: str, password: str) -> str:
 
 class API:
     """API object wrapping the Warmup REST API."""
+
     def __init__(self, email: str, access_token: str):
         self.email = email
         self.access_token = access_token

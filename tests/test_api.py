@@ -2,7 +2,6 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
-
 from pywarmup.api import API
 from pywarmup.api import Location
 from pywarmup.api import LocationMode

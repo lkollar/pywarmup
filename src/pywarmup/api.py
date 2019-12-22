@@ -8,7 +8,6 @@ from typing import List
 from typing import NamedTuple
 
 import requests
-
 from pywarmup.error import APIError
 from pywarmup.error import InvalidToken
 from pywarmup.error import LocationModeChangeFailure

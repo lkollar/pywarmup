@@ -5,7 +5,6 @@ from enum import Enum
 from typing import Any
 from typing import Dict
 from typing import NamedTuple
-from typing import Union
 
 import requests
 
@@ -13,6 +12,8 @@ from pywarmup.error import APIError
 from pywarmup.error import InvalidToken
 from pywarmup.error import LocationModeChangeFailure
 from pywarmup.error import TemperatureChangeFailure
+
+from typing import List
 
 TOKEN_URL = "https://api.warmup.com/apps/app/v1"
 URL = "https://apil.warmup.com/graphql"
@@ -86,16 +87,15 @@ def get_access_token(email: str, password: str) -> str:
                 "Failed to retrieve token. Response: %s", response.json()["message"]
             )
         raise InvalidToken
-    return response.json()["response"]["token"]
+    return str(response.json()["response"]["token"])
 
 
 class API:
     def __init__(self, email: str, access_token: str):
         self.email = email
         self.access_token = access_token
-        self.client = requests
 
-    def get_locations(self):
+    def get_locations(self) -> List[Location]:
         request = {"method": "getLocations"}
         response = self._send_request(request)
         locations = response["locations"]
@@ -113,7 +113,7 @@ class API:
             )
         return result
 
-    def get_location(self, location_id: int):
+    def get_location(self, location_id: int) -> Location:
         # FIXME this is pretty inefficient. We should send a query just for the location
         locations = self.get_locations()
         location = next((x for x in locations if x.id == location_id), None)
@@ -122,7 +122,7 @@ class API:
             raise APIError
         return location
 
-    def get_rooms(self):
+    def get_rooms(self) -> List[Room]:
         body = {
             "query": "query QUERY { user { currentLocation: location { id name rooms "
             "{ id roomName roomMode runModeInt targetTemp currentTemp "
@@ -131,7 +131,7 @@ class API:
         }
         header_with_token = HEADER.copy()
         header_with_token["warmup-authorization"] = self.access_token
-        response = self.client.post(url=URL, headers=header_with_token, json=body)
+        response = requests.post(url=URL, headers=header_with_token, json=body)
         if response.status_code != 200 or response.json()["status"] != "success":
             _LOG.info("Failed get room data: %s", response)
             raise APIError
@@ -160,7 +160,7 @@ class API:
             )
         return result
 
-    def get_room(self, room_id):
+    def get_room(self, room_id: int) -> Room:
         """Get information for a specific room."""
         # FIXME this is pretty inefficient. We should send a query just for the room.
         rooms = self.get_rooms()
@@ -170,7 +170,7 @@ class API:
             raise APIError
         return room
 
-    def set_temperature(self, room_id, new_temperature):
+    def set_temperature(self, room_id: int, new_temperature: float) -> None:
         body = {
             "account": {"email": self.email, "token": self.access_token},
             "request": {
@@ -181,7 +181,7 @@ class API:
             },
         }
         _LOG.info("Setting new target temperature: %s", new_temperature)
-        response = self.client.post(url=TOKEN_URL, headers=HEADER, json=body)
+        response = requests.post(url=TOKEN_URL, headers=HEADER, json=body)
 
         if (
             response.status_code != 200
@@ -190,7 +190,7 @@ class API:
             _LOG.info("Setting new target temperature failed: %s", response)
             raise TemperatureChangeFailure
 
-    def set_location_to_frost(self, location_id: int):
+    def set_location_to_frost(self, location_id: int) -> None:
         request = {
             "method": "setModes",
             "values": {
@@ -204,20 +204,17 @@ class API:
             },
         }
 
-        response = self._send_request(location_id, request)
+        self._send_request(request)
         _LOG.info(
-            "Successfully set location: %d to frost protection. Response "
-            "from server: '%s'",
-            location_id,
-            response.text,
+            "Successfully set location: %d to frost protection", location_id,
         )
 
-    def set_temperature_to_auto(self, room_id: int):
+    def set_temperature_to_auto(self, room_id: int) -> None:
         request = {"method": "setProgramme", "roomId": room_id, "roomMode": "prog"}
         self._send_request(request)
         _LOG.info("Successfully set room %d to auto", room_id)
 
-    def set_temperature_to_manual(self, room_id: int):
+    def set_temperature_to_manual(self, room_id: int) -> None:
         request = {"method": "setProgramme", "roomId": room_id, "roomMode": "fixed"}
         self._send_request(request)
         _LOG.info("Successfully set room %d to manual", room_id)
@@ -237,12 +234,12 @@ class API:
         }
         self._send_request(request)
 
-    def _send_request(self, request: Dict[str, Any]) -> None:
+    def _send_request(self, request: Dict[str, Any]) -> Dict:
         body = {
             "account": {"email": self.email, "token": self.access_token},
             "request": request,
         }
-        response = self.client.post(url=TOKEN_URL, headers=HEADER, json=body)
+        response = requests.post(url=TOKEN_URL, headers=HEADER, json=body)
         if (
             response.status_code != 200
             or response.json()["status"]["result"] != "success"
@@ -250,4 +247,4 @@ class API:
             _LOG.info("Failed to send request. Response:", response)
             raise LocationModeChangeFailure
 
-        return response.json().get("response")
+        return dict(response.json().get("response"))

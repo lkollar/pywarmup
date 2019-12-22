@@ -91,11 +91,13 @@ def get_access_token(email: str, password: str) -> str:
 
 
 class API:
+    """API object wrapping the Warmup REST API."""
     def __init__(self, email: str, access_token: str):
         self.email = email
         self.access_token = access_token
 
     def get_locations(self) -> List[Location]:
+        """Get all available locations."""
         request = {"method": "getLocations"}
         response = self._send_request(request)
         locations = response["locations"]
@@ -114,6 +116,7 @@ class API:
         return result
 
     def get_location(self, location_id: int) -> Location:
+        """Get location information for the specified location."""
         # FIXME this is pretty inefficient. We should send a query just for the location
         locations = self.get_locations()
         location = next((x for x in locations if x.id == location_id), None)
@@ -123,6 +126,7 @@ class API:
         return location
 
     def get_rooms(self) -> List[Room]:
+        """Retrieve all rooms for this account."""
         body = {
             "query": "query QUERY { user { currentLocation: location { id name rooms "
             "{ id roomName roomMode runModeInt targetTemp currentTemp "
@@ -161,6 +165,7 @@ class API:
         return result
 
     def get_room(self, room_id: int) -> Room:
+        """Get information on the specified room."""
         """Get information for a specific room."""
         # FIXME this is pretty inefficient. We should send a query just for the room.
         rooms = self.get_rooms()
@@ -171,6 +176,7 @@ class API:
         return room
 
     def set_temperature(self, room_id: int, new_temperature: float) -> None:
+        """Set the specified room's temperature."""
         body = {
             "account": {"email": self.email, "token": self.access_token},
             "request": {
@@ -191,6 +197,7 @@ class API:
             raise TemperatureChangeFailure
 
     def set_location_to_frost(self, location_id: int) -> None:
+        """Set the specified location to frost preset."""
         request = {
             "method": "setModes",
             "values": {
@@ -210,16 +217,19 @@ class API:
         )
 
     def set_temperature_to_auto(self, room_id: int) -> None:
+        """Set temperature control to automatic for the given room."""
         request = {"method": "setProgramme", "roomId": room_id, "roomMode": "prog"}
         self._send_request(request)
         _LOG.info("Successfully set room %d to auto", room_id)
 
     def set_temperature_to_manual(self, room_id: int) -> None:
+        """Set temperature control to manual for the given room."""
         request = {"method": "setProgramme", "roomId": room_id, "roomMode": "fixed"}
         self._send_request(request)
         _LOG.info("Successfully set room %d to manual", room_id)
 
     def set_location_to_off(self, location_id: int) -> None:
+        """Turn off device at specified location."""
         request = {
             "method": "setModes",
             "values": {

@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 import setuptools
 
+with open('README.md') as f:
+    long_description = f.read()
+
 setuptools.setup(
     name="pywarmup",
     version="0.1.0",
     description="Client library for Warmup thermostats",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     license="Apache",
     author="Laszlo Kiss Kollar",
     author_email="kiss.kollar.laszlo@gmail.com",

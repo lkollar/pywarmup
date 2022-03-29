@@ -256,4 +256,4 @@ class API:
             _LOG.info("Failed to send request. Response:", response)
             raise LocationModeChangeFailure
 
-        return dict(response.json().get("response"))
+        return dict(response.json().get("response", []))

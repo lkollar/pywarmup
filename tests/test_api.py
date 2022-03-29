@@ -2,6 +2,7 @@ from unittest.mock import Mock
 from unittest.mock import patch
 
 import pytest
+
 from pywarmup.api import API
 from pywarmup.api import Location
 from pywarmup.api import LocationMode
@@ -117,3 +118,19 @@ class TestAPI:
         api.set_temperature(room_id=64188, new_temperature=18.0)
         api.set_temperature_to_auto(room_id=64188)
         api.set_temperature_to_manual(room_id=64188)
+
+    def test_set_location_to_frost(self, requests_mock, api_factory):
+        api = api_factory
+
+        requests_mock.post.return_value = Mock(
+            **{
+                "json.return_value": {
+                    "status": {"result": "success"},
+                    "message": {"duration": "0.543"},
+                },
+                "status_code": 200,
+            }
+        )
+
+        # No exception should be raised
+        api.set_location_to_frost(location_id=123)

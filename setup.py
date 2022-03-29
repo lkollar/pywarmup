@@ -6,7 +6,7 @@ with open("README.md") as f:
 
 setuptools.setup(
     name="pywarmup",
-    version="0.1.0",
+    version="0.1.1",
     description="Client library for Warmup thermostats",
     long_description=long_description,
     long_description_content_type="text/markdown",

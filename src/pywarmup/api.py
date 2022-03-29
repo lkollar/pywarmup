@@ -8,6 +8,7 @@ from typing import List
 from typing import NamedTuple
 
 import requests
+
 from pywarmup.error import APIError
 from pywarmup.error import InvalidToken
 from pywarmup.error import LocationModeChangeFailure
@@ -212,7 +213,8 @@ class API:
 
         self._send_request(request)
         _LOG.info(
-            "Successfully set location: %d to frost protection", location_id,
+            "Successfully set location: %d to frost protection",
+            location_id,
         )
 
     def set_temperature_to_auto(self, room_id: int) -> None:
